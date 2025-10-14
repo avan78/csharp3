@@ -11,7 +11,6 @@ public record ToDoItemCreateRequestDto(string Name, string Description, bool IsC
             Name = name,
             Description = description,
             IsCompleted = isCompleted
-        }
-        ;
+        };
     }
 }

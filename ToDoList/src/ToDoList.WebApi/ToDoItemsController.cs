@@ -9,8 +9,16 @@ using ToDoList.Domain.Models;
 [ApiController]
 public class ToDoItemsController : ControllerBase
 {
-    private static List<ToDoItem> todos = new();
-    private static int id = 1;
+    private static readonly List<ToDoItem> Todos = new()
+    {
+        new ToDoItem(1, "garbage", "taking out the garbage", false),
+        new ToDoItem(2, "windows", "cleaning the windows", false ),
+        new ToDoItem(3, "shopping", "the new clothing is needed", false),
+        new ToDoItem(4, "gift", "buy a gift for friend's nameday", true),
+    };
+
+    private static int todoId = 1;
+
 
     [HttpPost]
     public IActionResult Create(ToDoItemCreateRequestDto request) // použijeme DTO - Data transfer object
@@ -19,9 +27,9 @@ public class ToDoItemsController : ControllerBase
         try
         {
             var todo = request.ToDomain(request.Name, request.Description, request.IsCompleted);
-            todo.ToDoItemId = ++id;
-            todos.Add(todo);
-            return CreatedAtAction(nameof(), new { id = todo.ToDoItemId }, todo);
+            todo.ToDoItemId = ++todoId;
+            Todos.Add(todo);
+            return CreatedAtAction(nameof(ReadById), new { id = todo.ToDoItemId }, todo);
             //StatusCode(StatusCodes.Status201Created);
 
         }
@@ -36,11 +44,11 @@ public class ToDoItemsController : ControllerBase
         try
         {
 
-            if (todos.Count == 0)
+            if (Todos.Count == 0)
             {
                 return StatusCode(StatusCodes.Status404NotFound);
             }
-            return Ok(todos);
+            return Ok(Todos);
 
         }
         catch (Exception ex)
@@ -50,11 +58,12 @@ public class ToDoItemsController : ControllerBase
         }
     }
     [HttpGet("{toDoItemId:int}")]
-    public IActionResult ReadById(int toDoItemId) // api/ToDoItems/<id> GET
+    public IActionResult ReadById(int todoId) // api/ToDoItems/<id> GET
     {
+        // return BadRequest();
         try
         {
-            var rightTodo = todos.Find(t => t.ToDoItemId == toDoItemId);
+            var rightTodo = Todos.Find(t => t.ToDoItemId == todoId);
 
             if (rightTodo == null)
             {
@@ -72,22 +81,28 @@ public class ToDoItemsController : ControllerBase
         }
         ;
 
+
+
     }
     [HttpPut("{toDoItemId:int}")]
     public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
     {
         try
         {
-             var updatedTodo = todos.FindIndex(t => t.ToDoItemId == toDoItemId);
+            int updatedIndex = Todos.FindIndex(t => t.ToDoItemId == toDoItemId);
 
-            if (updatedTodo == null)
+
+            if (updatedIndex < 0)
             {
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
+            var updatedTodo = Todos[toDoItemId];
+            updatedTodo.Name = request.Name;
+            updatedTodo.Description = request.Description;
+            updatedTodo.IsCompleted = request.IsCompleted;
 
-
-            return Ok(ToDoItemGetResponseDto.From(updatedTodo));
+            return StatusCode(StatusCodes.Status204NoContent);
 
         }
         catch (Exception ex)
@@ -101,14 +116,14 @@ public class ToDoItemsController : ControllerBase
     {
         try
         {
-            var deadTodo = todos.Find(t => t.ToDoItemId == toDoItemId);
+            var deadTodo = Todos.Find(t => t.ToDoItemId == toDoItemId);
             if (deadTodo == null)
             {
                 return StatusCode(StatusCodes.Status404NotFound);
 
             }
 
-            deadTodo
+            Todos.Remove(deadTodo);
             return StatusCode(StatusCodes.Status204NoContent);
 
         }
@@ -116,5 +131,10 @@ public class ToDoItemsController : ControllerBase
         {
             return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
         }
+    }
+
+    public void AddItemToStorage(ToDoItem item)
+    {
+        Todos.Add(item);
     }
 }

@@ -1,0 +1,4 @@
+
+// opsáno na lekci
+// GET {{host}}:{{port}}/api/ToDoItems
+// @itemToGet = 1
