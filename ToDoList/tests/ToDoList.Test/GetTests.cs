@@ -24,7 +24,7 @@ public class GetTests
 
         var toDoItem2 = new ToDoItem
         {
-            ToDoItemId = 1,
+            ToDoItemId = 2,
             Name = "Petr",
             Description = "odpadky",
             IsCompleted = true
@@ -79,7 +79,7 @@ public class GetTests
         // Assert.NotSame(item.ToDoItemId);
 
         var value = ok.Value;
-     //   Assert.Contains(value, item => item.Name == "Alena");
+        //   Assert.Contains(value, item => item.Name == "Alena");
 
         var badResult = controller.ReadById(33);
         // Assert.IsNotType("string", badResult);

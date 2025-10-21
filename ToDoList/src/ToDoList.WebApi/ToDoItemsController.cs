@@ -1,9 +1,11 @@
 namespace ToDoList.WebApi;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
+using ToDoList.Persistence;
 
 [Route("api/[controller]")] // localhost:5000/api/ToDoItems
 [ApiController]
@@ -11,17 +13,29 @@ public class ToDoItemsController : ControllerBase
 {
     private static readonly List<ToDoItem> Todos = new()
     {
+        // nepotřebujeme
         new ToDoItem(1, "garbage", "taking out the garbage", false),
         new ToDoItem(2, "windows", "cleaning the windows", false ),
         new ToDoItem(3, "shopping", "the new clothing is needed", false),
         new ToDoItem(4, "gift", "buy a gift for friend's nameday", true),
     };
 
+    private readonly ToDoItemsContext context;
+    public ToDoItemsController(ToDoItemsContext context)
+    {
+        this.context = context;
+
+        ToDoItem item = new ToDoItem { Name = "První úkol", Description = "První popis", IsCompleted = false };
+
+        context.ToDoItems.Add(item);
+        context.SaveChanges();
+    }
+
     private static int todoId = 5;
 
 
     [HttpPost]
-    public IActionResult Create(ToDoItemCreateRequestDto request) // použijeme DTO - Data transfer object
+    public ActionResult<ToDoItemGetResponseDto> Create([FromBody] ToDoItemCreateRequestDto request) // použijeme DTO - Data transfer object //actionresult
     {
 
         try
@@ -29,7 +43,10 @@ public class ToDoItemsController : ControllerBase
             var todo = request.ToDomain(request.Name, request.Description, request.IsCompleted);
             todo.ToDoItemId = ++todoId;
             Todos.Add(todo);
-            return CreatedAtAction(nameof(ReadById), new { id = todo.ToDoItemId }, todo);
+
+            context.ToDoItems.Add(todo);
+            context.SaveChanges();
+            return CreatedAtAction(nameof(ReadById), new { toDoItemId = todo.ToDoItemId }, todo);
             //StatusCode(StatusCodes.Status201Created);
 
         }
@@ -41,6 +58,8 @@ public class ToDoItemsController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<ToDoItemGetResponseDto>> Read() // api/ToDoItems GET
     {
+        //    => Ok(context.ToDoItems.Select(MapResponse)); //??
+
         try
         {
 
@@ -58,16 +77,16 @@ public class ToDoItemsController : ControllerBase
         }
     }
     [HttpGet("{toDoItemId:int}")]
-    public ActionResult ReadById(int todoId) // api/ToDoItems/<id> GET
+    public ActionResult<ToDoItemGetResponseDto> ReadById([FromRoute(Name = "toDoItemId")] int todoId) // api/ToDoItems/<id> GET
     {
         // return BadRequest();
         try
         {
-            var rightTodo = Todos.Find(t => t.ToDoItemId == todoId);
+            var rightTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == todoId);
 
             if (rightTodo == null)
             {
-                return StatusCode(StatusCodes.Status404NotFound);
+                return NotFound();
             }
 
 
@@ -79,15 +98,15 @@ public class ToDoItemsController : ControllerBase
             // pětistovka
             return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
         }
-        ;
 
 
 
     }
     [HttpPut("{toDoItemId:int}")]
-    public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
+    public ActionResult UpdateById([FromRoute] int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request) //i
     {
         try
+
         {
             int updatedIndex = Todos.FindIndex(t => t.ToDoItemId == toDoItemId);
 
@@ -97,7 +116,7 @@ public class ToDoItemsController : ControllerBase
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
-            var updatedTodo = Todos[toDoItemId];
+            var updatedTodo = Todos[updatedIndex];
             updatedTodo.Name = request.Name;
             updatedTodo.Description = request.Description;
             updatedTodo.IsCompleted = request.IsCompleted;
