@@ -17,7 +17,7 @@ public class ToDoItemsController : ControllerBase
         new ToDoItem(4, "gift", "buy a gift for friend's nameday", true),
     };
 
-    private static int todoId = 1;
+    private static int todoId = 5;
 
 
     [HttpPost]
@@ -39,7 +39,7 @@ public class ToDoItemsController : ControllerBase
         }
     }
     [HttpGet]
-    public IActionResult Read() // api/ToDoItems GET
+    public ActionResult<IEnumerable<ToDoItemGetResponseDto>> Read() // api/ToDoItems GET
     {
         try
         {
@@ -48,7 +48,7 @@ public class ToDoItemsController : ControllerBase
             {
                 return StatusCode(StatusCodes.Status404NotFound);
             }
-            return Ok(Todos);
+            return Ok(Todos.Select(ToDoItemGetResponseDto.From));
 
         }
         catch (Exception ex)
@@ -58,7 +58,7 @@ public class ToDoItemsController : ControllerBase
         }
     }
     [HttpGet("{toDoItemId:int}")]
-    public IActionResult ReadById(int todoId) // api/ToDoItems/<id> GET
+    public ActionResult ReadById(int todoId) // api/ToDoItems/<id> GET
     {
         // return BadRequest();
         try
