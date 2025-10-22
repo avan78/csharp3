@@ -25,7 +25,7 @@ public class ToDoItemsController : ControllerBase
     {
         this.context = context;
 
-        ToDoItem item = new ToDoItem { Name = "První úkol", Description = "První popis", IsCompleted = false };
+        var item = new ToDoItem { Name = "První úkol", Description = "První popis", IsCompleted = false };
 
         context.ToDoItems.Add(item);
         context.SaveChanges();
@@ -41,8 +41,8 @@ public class ToDoItemsController : ControllerBase
         try
         {
             var todo = request.ToDomain(request.Name, request.Description, request.IsCompleted);
-            todo.ToDoItemId = ++todoId;
-            Todos.Add(todo);
+            // todo.ToDoItemId = ++todoId;
+            // Todos.Add(todo);
 
             context.ToDoItems.Add(todo);
             context.SaveChanges();
@@ -58,16 +58,12 @@ public class ToDoItemsController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<ToDoItemGetResponseDto>> Read() // api/ToDoItems GET
     {
-        //    => Ok(context.ToDoItems.Select(MapResponse)); //??
+        //    => Ok(context.ToDoItems.Select(MapResponse)); //?? v hodině
 
         try
         {
-
-            if (Todos.Count == 0)
-            {
-                return StatusCode(StatusCodes.Status404NotFound);
-            }
-            return Ok(Todos.Select(ToDoItemGetResponseDto.From));
+            var tasks = context.ToDoItems.Select(ToDoItemGetResponseDto.From);
+            return Ok(tasks);
 
         }
         catch (Exception ex)
@@ -108,18 +104,18 @@ public class ToDoItemsController : ControllerBase
         try
 
         {
-            int updatedIndex = Todos.FindIndex(t => t.ToDoItemId == toDoItemId);
+            var updatedTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == toDoItemId);
 
 
-            if (updatedIndex < 0)
+            if (updatedTodo is null)
             {
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
-            var updatedTodo = Todos[updatedIndex];
             updatedTodo.Name = request.Name;
             updatedTodo.Description = request.Description;
             updatedTodo.IsCompleted = request.IsCompleted;
+            context.SaveChanges();
 
             return StatusCode(StatusCodes.Status204NoContent);
 
@@ -135,14 +131,15 @@ public class ToDoItemsController : ControllerBase
     {
         try
         {
-            var deadTodo = Todos.Find(t => t.ToDoItemId == toDoItemId);
+            var deadTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == toDoItemId);
             if (deadTodo == null)
             {
                 return StatusCode(StatusCodes.Status404NotFound);
 
             }
 
-            Todos.Remove(deadTodo);
+            context.ToDoItems.Remove(deadTodo);
+            context.SaveChanges();
             return StatusCode(StatusCodes.Status204NoContent);
 
         }
@@ -154,6 +151,6 @@ public class ToDoItemsController : ControllerBase
 
     public void AddItemToStorage(ToDoItem item)
     {
-        Todos.Add(item);
+        context.ToDoItems.Add(item);
     }
 }
