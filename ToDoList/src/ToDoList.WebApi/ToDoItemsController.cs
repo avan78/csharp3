@@ -117,7 +117,7 @@ public class ToDoItemsController : ControllerBase
             updatedTodo.IsCompleted = request.IsCompleted;
             context.SaveChanges();
 
-            return StatusCode(StatusCodes.Status204NoContent);
+            return Ok(updatedTodo);
 
         }
         catch (Exception ex)
