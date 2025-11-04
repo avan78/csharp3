@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using ToDoList.Persistence;
+using ToDoList.Persistence.Repositories;
 
 [Route("api/[controller]")] // localhost:5000/api/ToDoItems
 [ApiController]
@@ -13,7 +14,7 @@ public class ToDoItemsController : ControllerBase
 {
     private static readonly List<ToDoItem> Todos = new()
     {
-        // nepotřebujeme
+        // nepotřebujeme, máme context
         new ToDoItem(1, "garbage", "taking out the garbage", false),
         new ToDoItem(2, "windows", "cleaning the windows", false ),
         new ToDoItem(3, "shopping", "the new clothing is needed", false),
@@ -21,14 +22,15 @@ public class ToDoItemsController : ControllerBase
     };
 
     private readonly ToDoItemsContext context;
-    public ToDoItemsController(ToDoItemsContext context)
+    private readonly IRepository<ToDoItem> repository;
+    public ToDoItemsController(ToDoItemsContext context, IRepository<ToDoItem> repository)
     {
         this.context = context;
-
+        this.repository = repository;
         var item = new ToDoItem { Name = "První úkol", Description = "První popis", IsCompleted = false };
 
-        context.ToDoItems.Add(item);
-        context.SaveChanges();
+        // Asnotracking se používá jen u Read příkazů. Jestliže nic neměním,
+        // je to pak úspornější na výpočet. Ale je to optional.
     }
 
     private static int todoId = 5;
@@ -44,8 +46,12 @@ public class ToDoItemsController : ControllerBase
             // todo.ToDoItemId = ++todoId;
             // Todos.Add(todo);
 
-            context.ToDoItems.Add(todo);
-            context.SaveChanges();
+            // přenesli jsme do ToDoItemRepository:
+            // context.ToDoItems.Add(item);
+            //context.SaveChanges();
+
+            repository.Create(todo);
+
             return CreatedAtAction(nameof(ReadById), new { toDoItemId = todo.ToDoItemId }, todo);
             //StatusCode(StatusCodes.Status201Created);
 
@@ -62,7 +68,8 @@ public class ToDoItemsController : ControllerBase
 
         try
         {
-            var tasks = context.ToDoItems.Select(ToDoItemGetResponseDto.From);
+            var tasks = Read();
+
             return Ok(tasks);
 
         }
@@ -79,7 +86,7 @@ public class ToDoItemsController : ControllerBase
         try
         {
             var rightTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == todoId);
-
+            // var rightTodo = ReadById(todoId);
             if (rightTodo == null)
             {
                 return NotFound();
@@ -105,8 +112,6 @@ public class ToDoItemsController : ControllerBase
 
         {
             var updatedTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == toDoItemId);
-
-
             if (updatedTodo is null)
             {
                 return StatusCode(StatusCodes.Status404NotFound);
@@ -131,15 +136,17 @@ public class ToDoItemsController : ControllerBase
     {
         try
         {
-            var deadTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == toDoItemId);
+            //  var deadTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == toDoItemId);
+
+            var deadTodo = DeleteById(toDoItemId);
             if (deadTodo == null)
             {
                 return StatusCode(StatusCodes.Status404NotFound);
 
             }
 
-            context.ToDoItems.Remove(deadTodo);
-            context.SaveChanges();
+            //  context.ToDoItems.Remove(deadTodo);
+            //  context.SaveChanges();
             return StatusCode(StatusCodes.Status204NoContent);
 
         }

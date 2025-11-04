@@ -18,29 +18,36 @@ public class DeleteTests
     public void Delete_ItemById(int id)
     {
         // Arrange
-        var task = new ToDoItem
+        var connectionString = "Data Source=/../data/localDbTestDb.db";
+        var context = new ToDoItemsContext(connectionString);
+        context.Database.Migrate();
+        try
         {
-            ToDoItemId = 1,
-            Name = "FJ",
-            Description = "úkol do francouzštiny",
-            IsCompleted = true
-        };
+            var controller = new ToDoItemsController(context: context, repository: null);
 
-        var controller = new ToDoItemsController();
+            var task = new ToDoItem
+            {
+                ToDoItemId = 1,
+                Name = "FJ",
+                Description = "úkol do francouzštiny",
+                IsCompleted = true
+            };
 
+            controller.AddItemToStorage(task);
+            // Act
+            var result = controller.DeleteById(id);
+            var exist = controller.ReadById(id);
 
+            // Assert
+            var noContent = Assert.IsType<ObjectResult>(result);
+            Assert.IsType<NotFoundResult>(exist);
+            Assert.Equal(204, noContent.StatusCode);
+        }
 
-
-        controller.AddItemToStorage(task);
-        // Act
-        var result = controller.DeleteById(id);
-        var exist = controller.ReadById(id);
-
-        // Assert
-        var noContent = Assert.IsType<ObjectResult>(result);
-        Assert.IsType<NotFoundResult>(exist);
-        Assert.Equal(204, noContent.StatusCode);
-
+        finally
+        {
+            context.Database.EnsureDeleted();
+        }
 
 
     }
@@ -48,12 +55,22 @@ public class DeleteTests
     public void Delete_ById_Return404()
     {
         // Arrange
-        var controller = new ToDoItemsController();
-        // Act
-        var result = controller.DeleteById(200);
-        // Assert
-        var notFound = Assert.IsType<ObjectResult>(result);
-        Assert.Equal(404, notFound.StatusCode);
+        var connectionString = "Data Source=/../data/localDbTestDb.db";
+        var context = new ToDoItemsContext(connectionString);
+        context.Database.Migrate();
+        try
+        {
+            var controller = new ToDoItemsController(context: context, repository: null);
+            // Act
+            var result = controller.DeleteById(200);
+            // Assert
+            var notFound = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(404, notFound.StatusCode);
+        }
+        finally
+        {
+            context.Database.EnsureDeleted();
+        }
     }
 
 }
