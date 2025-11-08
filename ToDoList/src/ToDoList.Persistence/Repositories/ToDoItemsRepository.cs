@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ToDoList.Domain.Models;
 using ToDoList.Domain.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace ToDoList.Persistence.Repositories
 {
@@ -21,31 +22,44 @@ namespace ToDoList.Persistence.Repositories
             context.SaveChanges();
         }
 
-        public void Read()
+        public List<ToDoItem> Read()
+
+          => [.. context.ToDoItems.AsNoTracking()];
+
+
+        public ToDoItem? ReadById(int id)
+
+          => context.ToDoItems.AsNoTracking().FirstOrDefault(t => t.ToDoItemId == id);
+
+
+        public ToDoItem? UpdateById(ToDoItem item)
         {
-            context.ToDoItems.Select(ToDoItemGetResponseDto.From);
+            var updatedTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == item.ToDoItemId);
+            if (updatedTodo is null)
+            {
+                return null;
+            }
+
+            updatedTodo.Name = item.Name;
+            updatedTodo.Description = item.Description;
+            updatedTodo.IsCompleted = item.IsCompleted;
+
+            context.SaveChanges();
+            return updatedTodo;
+
         }
 
-        public void ReadById(int id)
-        {
-            context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == id);
-        }
-
-        public void UpdateById(int id)
-        {
-            var updatedTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == id);
-            /*updatedTodo.Name = request.Name;
-            updatedTodo.Description = request.Description;
-            updatedTodo.IsCompleted = request.IsCompleted; */
-
-        }
-
-        public void DeleteById(int id)
+        public bool DeleteById(int id)
         {
             var deadTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == id);
+            if (deadTodo is null)
+            {
+                return false;
+            }
 
             context.ToDoItems.Remove(deadTodo);
             context.SaveChanges();
+            return true;
         }
     }
 }

@@ -7,11 +7,11 @@ where T : class
 {
     public void Create(T item);
 
-    public void Read();
+    public List<ToDoItem> Read();
 
-    public void ReadById(int id);
+    public T? ReadById(int id);
 
-    public void UpdateById(int id);
+    public T? UpdateById(T item);
 
-    public void DeleteById(int id);
+    public bool DeleteById(int id);
 }

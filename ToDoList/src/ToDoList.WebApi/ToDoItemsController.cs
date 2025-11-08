@@ -65,12 +65,15 @@ public class ToDoItemsController : ControllerBase
     public ActionResult<IEnumerable<ToDoItemGetResponseDto>> Read() // api/ToDoItems GET
     {
         //    => Ok(context.ToDoItems.Select(MapResponse)); //?? v hodině
+        //   context.ToDoItems.Select(ToDoItemGetResponseDto.From);
+
 
         try
         {
-            var tasks = Read();
+            var tasks = repository.Read();
+            var dtos = tasks.Select(ToDoItemGetResponseDto.From).ToList();
 
-            return Ok(tasks);
+            return Ok(dtos);
 
         }
         catch (Exception ex)
@@ -85,8 +88,8 @@ public class ToDoItemsController : ControllerBase
         // return BadRequest();
         try
         {
-            var rightTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == todoId);
-            // var rightTodo = ReadById(todoId);
+            //  var rightTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == todoId);
+            var rightTodo = repository.ReadById(todoId);
             if (rightTodo == null)
             {
                 return NotFound();
@@ -111,20 +114,38 @@ public class ToDoItemsController : ControllerBase
         try
 
         {
-            var updatedTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == toDoItemId);
-            if (updatedTodo is null)
+            /*  var updatedTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == toDoItemId);
+              if (updatedTodo is null)
+              {
+                  return StatusCode(StatusCodes.Status404NotFound);
+              }
+
+
+              updatedTodo.Name = request.Name;
+              updatedTodo.Description = request.Description;
+              updatedTodo.IsCompleted = request.IsCompleted;
+              context.SaveChanges();
+
+              return Ok(updatedTodo);*/
+
+            var updatedTodo = new ToDoItem
             {
-                return StatusCode(StatusCodes.Status404NotFound);
+                ToDoItemId = toDoItemId,
+                Name = request.Name,
+                Description = request.Description,
+                IsCompleted = request.IsCompleted
+            };
+
+            var modified = repository.UpdateById(updatedTodo);
+            if (modified is null)
+            {
+                return NotFound();
             }
 
-            updatedTodo.Name = request.Name;
-            updatedTodo.Description = request.Description;
-            updatedTodo.IsCompleted = request.IsCompleted;
-            context.SaveChanges();
-
-            return Ok(updatedTodo);
+            return Ok(ToDoItemGetResponseDto.From(modified));
 
         }
+
         catch (Exception ex)
         {
             return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
@@ -138,15 +159,21 @@ public class ToDoItemsController : ControllerBase
         {
             //  var deadTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == toDoItemId);
 
-            var deadTodo = DeleteById(toDoItemId);
-            if (deadTodo == null)
-            {
-                return StatusCode(StatusCodes.Status404NotFound);
+            /* var deadTodo = repository.DeleteById(toDoItemId);
+             if (deadTodo == null)
+             {
+                 return StatusCode(StatusCodes.Status404NotFound);
 
-            }
+             }*/
 
             //  context.ToDoItems.Remove(deadTodo);
             //  context.SaveChanges();
+            bool ok = repository.DeleteById(toDoItemId);
+            if (!ok)
+            {
+                return NotFound();
+            }
+
             return StatusCode(StatusCodes.Status204NoContent);
 
         }
