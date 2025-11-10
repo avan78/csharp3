@@ -174,7 +174,7 @@ public class ToDoItemsController : ControllerBase
                 return NotFound();
             }
 
-            return StatusCode(StatusCodes.Status204NoContent);
+            return NoContent();
 
         }
         catch (Exception ex)

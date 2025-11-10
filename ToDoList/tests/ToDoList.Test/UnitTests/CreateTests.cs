@@ -26,7 +26,7 @@ public class CreateTests
         var result = controller.Create(request);
 
         // Assert
-        Assert.IsType<CreatedAtActionResult>(result);
+        Assert.IsType<CreatedAtActionResult>(result.Result);
 
 
     }

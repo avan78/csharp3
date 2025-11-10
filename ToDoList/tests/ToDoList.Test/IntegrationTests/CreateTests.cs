@@ -7,6 +7,7 @@ using ToDoList.WebApi;
 using Microsoft.AspNetCore.Mvc;
 using ToDoList.Persistence;
 using Microsoft.EntityFrameworkCore;
+using ToDoList.Persistence.Repositories;
 
 public class CreateTests
 {
@@ -15,28 +16,27 @@ public class CreateTests
     [InlineData("univerzita", "udělat úkol", true)]
     public void Create_Item_ReturnsToDoItem(string name, string description, bool isCompleted)
     {
-        var connectionString = "Data Source=/../data/localDbTestDb.db";
+        string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         // Arrange
         using var context = new ToDoItemsContext(connectionString);
         context.Database.Migrate();
 
+        var repository = new ToDoItemsRepository(context);
+        var controller = new ToDoItemsController(context: context, repository: repository);
+        var request = new ToDoItemCreateRequestDto(name, description, isCompleted);
 
-        try
-        {
-            var controller = new ToDoItemsController(context: context, repository: null);
-            var request = new ToDoItemCreateRequestDto(name, description, isCompleted);
+        // Act
+        var result = controller.Create(request);
 
-            // Act
-            var result = controller.Create(request);
+        // Assert
+        var newTodoResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+        var newTodoValue = Assert.IsType<ToDoItem>(newTodoResult.Value);
+        Assert.Equal(request.Name, newTodoValue.Name);
 
-            // Assert
-            Assert.IsType<CreatedAtActionResult>(result);
-        }
         // cleanup
-        finally
-        {
-            context.Database.EnsureDeleted();
-        }
+        context.ToDoItems.Remove(context.ToDoItems.Find(newTodoValue.ToDoItemId));
+        context.SaveChanges();
+
 
 
     }

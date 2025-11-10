@@ -39,9 +39,8 @@ public class DeleteTests
         var exist = controller.ReadById(id);
 
         // Assert
-        var noContent = Assert.IsType<ObjectResult>(result);
-        Assert.IsType<NotFoundResult>(exist);
-        Assert.Equal(204, noContent.StatusCode);
+        var noContent = Assert.IsType<NotFoundResult>(result);
+        Assert.IsType<NoContentResult>(result);
 
 
 
