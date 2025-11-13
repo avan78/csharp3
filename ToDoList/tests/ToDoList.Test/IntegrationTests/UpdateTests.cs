@@ -30,8 +30,8 @@ public class UpdateTests
 
 
         var newTaskType = Assert.IsType<CreatedAtActionResult>(createResult.Result);
-        var newTask = Assert.IsType<ToDoList.Domain.Models.ToDoItem>(createResult.Value);
-        int id = newTask.ToDoItemId;
+        var createdTodo = Assert.IsType<ToDoItem>(newTaskType.Value);
+        int id = createdTodo.ToDoItemId;
 
         // Act
         var updateTask = new ToDoItemUpdateRequestDto("květiny", "udělat výzdobu", true);
@@ -39,21 +39,14 @@ public class UpdateTests
 
 
         // Assert
-        // Assert.IsType<NoContentResult>(updateResult);
-
-        //var getUpdated = controller.ReadById(id);
         var okUpdate = Assert.IsType<OkObjectResult>(updateResult);
         var correctUpdated = Assert.IsType<ToDoItemGetResponseDto>(okUpdate.Value);
 
-
-
-        // var updated = Assert.IsType<ToDoItemGetResponseDto>(getUpdated.Value);
         Assert.Equal("květiny", correctUpdated.Name);
         Assert.Equal("udělat výzdobu", correctUpdated.Description);
         Assert.True(correctUpdated.IsCompleted);
 
         Assert.NotEqual("koš", correctUpdated.Name);
-        Assert.False(correctUpdated.IsCompleted);
 
         context.Database.EnsureDeleted();
 

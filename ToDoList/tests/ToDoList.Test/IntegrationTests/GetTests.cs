@@ -77,47 +77,40 @@ public class GetTests
     [InlineData(20, "Gabriel", "koupit květiny", false)]
     public void Get_ItemById_ReturnsItemById(int id, string name, string description, bool isCompleted)
     {
+        // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         var context = new ToDoItemsContext(connectionString);
+        context.Database.EnsureDeleted();
         context.Database.Migrate();
+
+
         var repository = new ToDoItemsRepository(context);
-
-
-
         var controller = new ToDoItemsController(context: context, repository: repository);
+
         controller.AddItemToStorage(new ToDoItem { ToDoItemId = id, Name = name, Description = description, IsCompleted = isCompleted });
+        context.SaveChanges();
 
-        // act
-        ActionResult<ToDoItemGetResponseDto> result = controller.ReadById(20);
+        // Act
+        ActionResult<ToDoItemGetResponseDto> result = controller.ReadById(id);
 
-        //assert
+        // Assert
         // var action = Assert.IsType<ActionResult<ToDoItemGetResponseDto>>(result);
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var item = Assert.IsType<ToDoItemGetResponseDto>(ok.Value);
-
-
 
         Assert.Equal(id, item.ToDoItemId);
         Assert.Equal(name, item.Name);
         Assert.Equal(isCompleted, item.IsCompleted);
         Assert.Equal(description, item.Description);
-
         Assert.IsType<bool>(item.IsCompleted);
-        // Assert.NotSame(item.ToDoItemId);
 
-        object value = ok.Value;
-        //   Assert.Contains(value, item => item.Name == "Alena");
-
-        var badResult = controller.ReadById(33);
-        // Assert.IsNotType("string", badResult);
-
-
+        // Negative result
+        var notFound = controller.ReadById(777);
+        Assert.IsType<NotFoundResult>(notFound.Result);
 
         context.Database.EnsureDeleted();
 
     }
-
-    //něco, co má negativní výsledek.
 
 
 }

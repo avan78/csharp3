@@ -39,7 +39,7 @@ namespace ToDoList.Persistence.Repositories
             {
                 return null;
             }
-
+// alternativa: použití find a pak context.Entry(foundItem).CurrentValues.SetValues(item)
             updatedTodo.Name = item.Name;
             updatedTodo.Description = item.Description;
             updatedTodo.IsCompleted = item.IsCompleted;

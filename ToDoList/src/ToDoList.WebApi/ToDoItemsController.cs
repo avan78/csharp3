@@ -182,7 +182,7 @@ public class ToDoItemsController : ControllerBase
             return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
         }
     }
-
+    [NonAction]
     public void AddItemToStorage(ToDoItem item)
     {
         context.ToDoItems.Add(item);
