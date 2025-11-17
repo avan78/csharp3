@@ -30,7 +30,6 @@ var app = builder.Build();
     app.MapControllers();
 }
 
-// app.MapGet("/nazdarSvete", () => "Nazdar světe!");
 
 
 /*builder.Services.AddEndpointsApiExplorer();

@@ -12,14 +12,7 @@ using ToDoList.Persistence.Repositories;
 [ApiController]
 public class ToDoItemsController : ControllerBase
 {
-    private static readonly List<ToDoItem> Todos = new()
-    {
-        // nepotřebujeme, máme context
-        new ToDoItem(1, "garbage", "taking out the garbage", false),
-        new ToDoItem(2, "windows", "cleaning the windows", false ),
-        new ToDoItem(3, "shopping", "the new clothing is needed", false),
-        new ToDoItem(4, "gift", "buy a gift for friend's nameday", true),
-    };
+
 
     private readonly ToDoItemsContext context;
     private readonly IRepository<ToDoItem> repository;
@@ -43,12 +36,6 @@ public class ToDoItemsController : ControllerBase
         try
         {
             var todo = request.ToDomain(request.Name, request.Description, request.IsCompleted);
-            // todo.ToDoItemId = ++todoId;
-            // Todos.Add(todo);
-
-            // přenesli jsme do ToDoItemRepository:
-            // context.ToDoItems.Add(item);
-            //context.SaveChanges();
 
             repository.Create(todo);
 
@@ -85,7 +72,6 @@ public class ToDoItemsController : ControllerBase
     [HttpGet("{toDoItemId:int}")]
     public ActionResult<ToDoItemGetResponseDto> ReadById([FromRoute(Name = "toDoItemId")] int todoId) // api/ToDoItems/<id> GET
     {
-        // return BadRequest();
         try
         {
             //  var rightTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == todoId);
@@ -101,7 +87,6 @@ public class ToDoItemsController : ControllerBase
         }
         catch (Exception ex)
         {
-            // pětistovka
             return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
         }
 
