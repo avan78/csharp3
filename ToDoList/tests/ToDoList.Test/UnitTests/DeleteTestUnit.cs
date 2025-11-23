@@ -50,24 +50,24 @@ namespace ToDoList.Test.UnitTests
             Assert.IsType<NoContentResult>(result);
 
         }
-        [Fact(Skip = "We don't use ReadById function in controller.")]
-        public void DeleteWhenReadThrows_ReturnInternalServerError()
-        {
-            // Arrange
-            //  var (controller, repo) = CreateController();
-            var repositoryMock = Substitute.For<IRepository<ToDoItem>>();
-            var controller = new ToDoItemsController(context: null, repositoryMock);
-            repositoryMock.When(r => r.ReadById(42))
-            .Do(_ => throw new Exception("DB down"));
+        /*   [Fact(Skip = "We don't use ReadById function in controller.")]
+         public void DeleteWhenReadThrows_ReturnInternalServerError()
+          {
+              // Arrange
+              //  var (controller, repo) = CreateController();
+              var repositoryMock = Substitute.For<IRepository<ToDoItem>>();
+              var controller = new ToDoItemsController(context: null, repositoryMock);
+              repositoryMock.When(r => r.ReadById(42))
+              .Do(_ => throw new Exception("DB down"));
 
-            // Act
-            var result = controller.DeleteById(42); //zjistit id
+              // Act
+              var result = controller.DeleteById(42); //zjistit id
 
-            // Assert
-            var obj = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(StatusCodes.Status500InternalServerError, obj.StatusCode);
+              // Assert
+              var obj = Assert.IsType<ObjectResult>(result);
+              Assert.Equal(StatusCodes.Status500InternalServerError, obj.StatusCode);
 
-        }
+          } */
         [Fact]
         public void Delete_WhenDeleteThrows_ReturnsInternalServerError()
         {

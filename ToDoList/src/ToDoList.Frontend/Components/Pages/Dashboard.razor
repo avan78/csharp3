@@ -1,0 +1,111 @@
+﻿@using Microsoft.AspNetCore.Authorization.Infrastructure
+@using ToDoList.Frontend
+@using ToDoList.Frontend.Models
+@using System.Linq;
+<div>
+    <h2>Christmas dashboard 🎄🎁</h2>
+    <table>
+        <thead>
+            <tr>
+                <th><button class="sort-button" @onclick="OrderById">Id ↑↓</button></th>
+                <th><button class="sort-button" @onclick="OrderByName">Name ↑↓</button></th>
+                <th><button class="sort-button" @onclick="OrderByDescription">Descripiton ↑↓</button></th>
+                <th><button class="sort-button" @onclick="OrderByIsCompleted">Completed ↑↓</button></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in sortedData)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>@(item.IsCompleted ? "Dokončen" : "Nedokončen")</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code
+{
+    //void OnInitialized() funkce, která zavolá data na první render
+    //todolist lze např. zkombinovat s jinými funkcemi, např. sorting
+    // DÚ vložit tlačítka na sortování a orderby do headeru
+    private bool sortByIdAsc = true;
+    private bool sortByNameAsc = true;
+    private bool sortByDescriptionAsc = true;
+    private bool sortByIsCompletedAsc = true;
+
+    private List<ToDoItemView> testData = new List<ToDoItemView>
+{
+new ToDoItemView(
+Id: 1,
+Name: "věnec",
+Description: "vyrobit adventní věnec a umístit jej na stůl",
+IsCompleted: false
+),
+new ToDoItemView(
+Id: 2,
+Name: "dárečky",
+Description: "nakoupit",
+IsCompleted: true
+),
+new ToDoItemView(
+Id: 3,
+Name: "svíčky",
+Description: "rozmístit v bytě vánoční svíčky",
+IsCompleted: false
+),
+new ToDoItemView(
+Id: 4,
+Name: "vánoční trhy",
+Description: "navštívit vánoční trhy",
+IsCompleted: false
+),
+new ToDoItemView(
+Id: 5,
+Name: "hrady a zámky",
+Description: "navštívit adventní prohlídku nějakého zámku - Žleby, Třeboň, Kuks...",
+IsCompleted: true
+),
+};
+
+    //IEnumerable<ToDoItemView> sortedTodos = test
+    // použít orderby z linqu
+    // return null;
+    private List<ToDoItemView> sortedData = new List<ToDoItemView>();
+
+    protected override void OnInitialized()
+    {
+        sortedData = testData.ToList();
+    }
+
+    private void OrderById()
+    {
+        sortByIdAsc = !sortByIdAsc;
+        sortedData = sortByIdAsc ? sortedData.OrderBy(todo => todo.Id).ToList() : sortedData.OrderByDescending(todo =>
+        todo.Id).ToList();
+    }
+
+    private void OrderByName()
+    {
+        sortByNameAsc = !sortByNameAsc;
+        sortedData = sortByNameAsc ?
+        sortedData.OrderBy(todo => todo.Name).ToList() : sortedData.OrderByDescending(todo => todo.Name).ToList();
+    }
+
+    private void OrderByDescription()
+    {
+        sortByDescriptionAsc = !sortByDescriptionAsc;
+        sortedData = sortByDescriptionAsc ?
+        sortedData.OrderBy(todo => todo.Description).ToList() : sortedData.OrderByDescending(todo => todo.Description).ToList();
+    }
+    private void OrderByIsCompleted()
+    {
+        sortByIsCompletedAsc = !sortByIsCompletedAsc;
+        sortedData = sortByIsCompletedAsc ?
+        sortedData.OrderBy(todo => todo.IsCompleted).ToList() : sortedData.OrderByDescending(todo => todo.IsCompleted).ToList();
+    }
+}
