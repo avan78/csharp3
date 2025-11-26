@@ -2,6 +2,7 @@ using ToDoList.Domain.Models;
 using ToDoList.Persistence;
 using ToDoList.Persistence.Repositories;
 
+
 var builder = WebApplication.CreateBuilder(args);
 {
     // Configure Dependency injections
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddScoped<IRepository<ToDoItem>, ToDoItemsRepository>();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+
 }
 var app = builder.Build();
 {

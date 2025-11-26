@@ -10,4 +10,8 @@
     <Folder Include="Components\Pages\Models\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ToDoList.Domain\ToDoList.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
