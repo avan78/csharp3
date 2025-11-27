@@ -11,11 +11,11 @@ using Microsoft.AspNetCore.Http;
 public class CreateTestsUnit
 {
     [Fact]
-    public void Post_CreateValidRequest_ReturnsCreatedAtAction()
+    public async Task Post_CreateValidRequest_ReturnsCreatedAtAction()
     {
         // Arrange
-        var repository = Substitute.For<IRepository<ToDoItem>>();
-        var controller = new ToDoItemsController(null, repository);
+        var repository = Substitute.For<IRepositoryAsync<ToDoItem>>();
+        var controller = new ToDoItemsController(null!, repository);
 
         var todo = new ToDoItemCreateRequestDto(
             Name: "naplánovat dovolenou",
@@ -24,15 +24,16 @@ public class CreateTestsUnit
         );
 
 
-        repository.When(r => r.Create(Arg.Any<ToDoItem>()))
-            .Do(ci =>
+        repository.CreateAsync(Arg.Any<ToDoItem>())
+            .Returns(ci =>
             {
                 var arg = ci.Arg<ToDoItem>();
                 arg.ToDoItemId = 123;
+                return Task.CompletedTask;
             });
 
         // Act
-        var result = controller.Create(todo);
+        var result = await controller.Create(todo);
 
         // Assert
         var created = Assert.IsType<CreatedAtActionResult>(result.Result);
@@ -45,19 +46,19 @@ public class CreateTestsUnit
         Assert.Equal("Francie", value.Description);
         Assert.True(value.IsCompleted);
 
-        repository.Received(1).Create(Arg.Is<ToDoItem>(t =>
-            t.Name == todo.Name &&
-            t.Description == todo.Description &&
-            t.IsCompleted == todo.IsCompleted
-        ));
+        await repository.Received(1).CreateAsync(Arg.Is<ToDoItem>(t =>
+              t.Name == todo.Name &&
+              t.Description == todo.Description &&
+              t.IsCompleted == todo.IsCompleted
+          ));
     }
 
     [Fact]
-    public void Post_CreateUnhandledException_ReturnsInternalServerError()
+    public async Task Post_CreateUnhandledException_ReturnsInternalServerError()
     {
         // Arrange
-        var repository = Substitute.For<IRepository<ToDoItem>>();
-        var controller = new ToDoItemsController(null, repository);
+        var repository = Substitute.For<IRepositoryAsync<ToDoItem>>();
+        var controller = new ToDoItemsController(null!, repository);
 
         var todo = new ToDoItemCreateRequestDto(
             Name: "namalovat obraz",
@@ -65,15 +66,15 @@ public class CreateTestsUnit
             IsCompleted: true
         );
 
-        repository.When(r => r.Create(Arg.Any<ToDoItem>()))
-            .Do(_ => throw new Exception("DB down"));
+        repository.When(r => r.CreateAsync(Arg.Any<ToDoItem>()))
+             .Do(_ => throw new Exception("DB down"));
 
         // Act
-        var result = controller.Create(todo);
+        var result = await controller.Create(todo);
 
         // Assert
         var obj = Assert.IsType<ObjectResult>(result.Result);
         Assert.Equal(StatusCodes.Status500InternalServerError, obj.StatusCode);
-        repository.Received(1).Create(Arg.Any<ToDoItem>());
+        await repository.Received(1).CreateAsync(Arg.Any<ToDoItem>());
     }
 }
