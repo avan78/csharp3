@@ -17,17 +17,16 @@ namespace ToDoList.Test.UnitTests;
 public class GetByIdTestsUnit
 {
     [Fact]
-    public void Get_ReadByIdWhenSomeItemAvailable_ReturnsOk()
+    public async Task Get_ReadByIdWhenSomeItemAvailable_ReturnsOk()
     {
         // Arrange
-        var repository = Substitute.For<IRepository<ToDoItem>>();
+        var repository = Substitute.For<IRepositoryAsync<ToDoItem>>();
         var controller = new ToDoItemsController(null, repository);
 
         var item = new ToDoItem { ToDoItemId = 7, Name = "test", Description = "desc", IsCompleted = false };
-        repository.ReadById(7).Returns(item);
-
+        repository.ReadByIdAsync(7).Returns(Task.FromResult<ToDoItem?>(item));
         // Act
-        var result = controller.ReadById(7);
+        var result = await controller.ReadById(7);
 
         // Assert
         var ok = Assert.IsType<OkObjectResult>(result.Result);
@@ -37,40 +36,40 @@ public class GetByIdTestsUnit
         Assert.Equal("desc", dto.Description);
         Assert.False(dto.IsCompleted);
 
-        repository.Received(1).ReadById(7);
+        await repository.Received(1).ReadByIdAsync(7);
     }
     [Fact]
-    public void Get_ReadByIdWhenItemIsNull_ReturnsNotFound()
+    public async Task Get_ReadByIdWhenItemIsNull_ReturnsNotFound()
     {
         // Arrange
-        var repository = Substitute.For<IRepository<ToDoItem>>();
+        var repository = Substitute.For<IRepositoryAsync<ToDoItem>>();
         var controller = new ToDoItemsController(null, repository);
 
-        repository.ReadById(999).Returns((ToDoItem?)null);
+        repository.ReadByIdAsync(999).Returns((ToDoItem?)null);
 
         // Act
-        var result = controller.ReadById(999);
+        var result = await controller.ReadById(999);
 
         // Assert
         Assert.IsType<NotFoundResult>(result.Result);
-        repository.Received(1).ReadById(999);
+        await repository.Received(1).ReadByIdAsync(999);
     }
 
     [Fact]
-    public void Get_ReadByIdUnhandledException_ReturnsInternalServerError()
+    public async Task Get_ReadByIdUnhandledException_ReturnsInternalServerError()
     {
         // Arrange
-        var repo = Substitute.For<IRepository<ToDoItem>>();
+        var repo = Substitute.For<IRepositoryAsync<ToDoItem>>();
         var controller = new ToDoItemsController(null, repo);
 
-        repo.ReadById(42).Returns(_ => { throw new Exception("DB down"); });
+        repo.ReadByIdAsync(42).Returns<Task>(_ => { throw new Exception("DB down"); });
 
         // Act
-        var result = controller.ReadById(42);
+        var result = await controller.ReadById(42);
 
         // Assert
         var obj = Assert.IsType<ObjectResult>(result.Result);
         Assert.Equal(StatusCodes.Status500InternalServerError, obj.StatusCode);
-        repo.Received(1).ReadById(42);
+        await repo.Received(1).ReadByIdAsync(42);
     }
 }

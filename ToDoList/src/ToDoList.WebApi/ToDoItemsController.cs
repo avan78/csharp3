@@ -15,8 +15,8 @@ public class ToDoItemsController : ControllerBase
 
 
     private readonly ToDoItemsContext context;
-    private readonly IRepository<ToDoItem> repository;
-    public ToDoItemsController(ToDoItemsContext context, IRepository<ToDoItem> repository)
+    private readonly IRepositoryAsync<ToDoItem> repository;
+    public ToDoItemsController(ToDoItemsContext context, IRepositoryAsync<ToDoItem> repository)
     {
         this.context = context;
         this.repository = repository;
@@ -30,14 +30,14 @@ public class ToDoItemsController : ControllerBase
 
 
     [HttpPost]
-    public ActionResult<ToDoItemGetResponseDto> Create([FromBody] ToDoItemCreateRequestDto request) // použijeme DTO - Data transfer object //actionresult
+    public async Task<ActionResult<ToDoItemGetResponseDto>> Create([FromBody] ToDoItemCreateRequestDto request) // použijeme DTO - Data transfer object //actionresult
     {
 
         try
         {
             var todo = request.ToDomain(request.Name, request.Description, request.IsCompleted);
 
-            repository.Create(todo);
+            await repository.CreateAsync(todo);
 
             return CreatedAtAction(nameof(ReadById), new { toDoItemId = todo.ToDoItemId }, todo);
             //StatusCode(StatusCodes.Status201Created);
@@ -49,7 +49,7 @@ public class ToDoItemsController : ControllerBase
         }
     }
     [HttpGet]
-    public ActionResult<IEnumerable<ToDoItemGetResponseDto>> Read() // api/ToDoItems GET
+    public async Task<ActionResult<IEnumerable<ToDoItemGetResponseDto>>> Read() // api/ToDoItems GET
     {
         //    => Ok(context.ToDoItems.Select(MapResponse)); //?? v hodině
         //   context.ToDoItems.Select(ToDoItemGetResponseDto.From);
@@ -57,7 +57,7 @@ public class ToDoItemsController : ControllerBase
 
         try
         {
-            var tasks = repository.Read();
+            var tasks = await repository.ReadAsync();
             var dtos = tasks.Select(ToDoItemGetResponseDto.From).ToList();
 
             return Ok(dtos);
@@ -70,12 +70,12 @@ public class ToDoItemsController : ControllerBase
         }
     }
     [HttpGet("{toDoItemId:int}")]
-    public ActionResult<ToDoItemGetResponseDto> ReadById([FromRoute(Name = "toDoItemId")] int todoId) // api/ToDoItems/<id> GET
+    public async Task<ActionResult<ToDoItemGetResponseDto>> ReadById([FromRoute(Name = "toDoItemId")] int todoId) // api/ToDoItems/<id> GET
     {
         try
         {
             //  var rightTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == todoId);
-            var rightTodo = repository.ReadById(todoId);
+            var rightTodo = await repository.ReadByIdAsync(todoId);
             if (rightTodo == null)
             {
                 return NotFound();
@@ -94,7 +94,7 @@ public class ToDoItemsController : ControllerBase
 
     }
     [HttpPut("{toDoItemId:int}")]
-    public ActionResult UpdateById([FromRoute] int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request) //i
+    public async Task<ActionResult> UpdateById([FromRoute] int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request) //i
     {
         try
 
@@ -121,7 +121,7 @@ public class ToDoItemsController : ControllerBase
                 IsCompleted = request.IsCompleted
             };
 
-            var modified = repository.UpdateById(updatedTodo);
+            var modified = await repository.UpdateByIdAsync(updatedTodo);
             if (modified is null)
             {
                 return NotFound();
@@ -138,7 +138,7 @@ public class ToDoItemsController : ControllerBase
 
     }
     [HttpDelete("{toDoItemId:int}")]
-    public IActionResult DeleteById(int toDoItemId)
+    public async Task<IActionResult> DeleteById(int toDoItemId)
     {
         try
         {
@@ -153,7 +153,7 @@ public class ToDoItemsController : ControllerBase
 
             //  context.ToDoItems.Remove(deadTodo);
             //  context.SaveChanges();
-            bool ok = repository.DeleteById(toDoItemId);
+            bool ok = await repository.DeleteByIdAsync(toDoItemId);
             if (!ok)
             {
                 return NotFound();

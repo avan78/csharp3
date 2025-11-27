@@ -13,12 +13,12 @@ public class GetTests
 {
 
     [Fact]
-    public void Get_AllItems_ReturnsAllItems()
+    public async Task Get_AllItems_ReturnsAllItems()
     {
         // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         using var context = new ToDoItemsContext(connectionString);
-        context.Database.Migrate();
+        await context.Database.MigrateAsync();
 
 
         var toDoItem1 = new ToDoItem
@@ -39,7 +39,7 @@ public class GetTests
         };
 
         context.ToDoItems.AddRange(toDoItem1, toDoItem2);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
         // controller.AddItemToStorage(toDoItem1);
         //controller.AddItemToStorage(toDoItem2);
@@ -49,7 +49,7 @@ public class GetTests
 
 
         // Act
-        var result = controller.Read();
+        var result = await controller.Read();
         IEnumerable<ToDoItemGetResponseDto> value = result.Result is OkObjectResult ok ? Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(ok.Value) : Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(result.Value);
         // var value = result.GetValue(); //přidat v extension
 
@@ -66,7 +66,7 @@ public class GetTests
         Assert.Equal(toDoItem1.IsCompleted, firstToDo.IsCompleted);
 
 
-        context.Database.EnsureDeleted();
+        await context.Database.EnsureDeletedAsync();
 
 
     }
@@ -75,23 +75,23 @@ public class GetTests
     [Theory]
     [InlineData(10, "Jana", "okna", true)]
     [InlineData(20, "Gabriel", "koupit květiny", false)]
-    public void Get_ItemById_ReturnsItemById(int id, string name, string description, bool isCompleted)
+    public async Task Get_ItemById_ReturnsItemById(int id, string name, string description, bool isCompleted)
     {
         // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         var context = new ToDoItemsContext(connectionString);
-        context.Database.EnsureDeleted();
-        context.Database.Migrate();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.MigrateAsync();
 
 
         var repository = new ToDoItemsRepository(context);
         var controller = new ToDoItemsController(context: context, repository: repository);
 
         controller.AddItemToStorage(new ToDoItem { ToDoItemId = id, Name = name, Description = description, IsCompleted = isCompleted });
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
         // Act
-        ActionResult<ToDoItemGetResponseDto> result = controller.ReadById(id);
+        ActionResult<ToDoItemGetResponseDto> result = await controller.ReadById(id);
 
         // Assert
         // var action = Assert.IsType<ActionResult<ToDoItemGetResponseDto>>(result);
@@ -105,12 +105,10 @@ public class GetTests
         Assert.IsType<bool>(item.IsCompleted);
 
         // Negative result
-        var notFound = controller.ReadById(777);
+        var notFound = await controller.ReadById(777);
         Assert.IsType<NotFoundResult>(notFound.Result);
 
-        context.Database.EnsureDeleted();
+        await context.Database.EnsureDeletedAsync();
 
     }
-
-
 }
