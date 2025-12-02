@@ -23,7 +23,7 @@ public class GetByIdTestsUnit
         var repository = Substitute.For<IRepositoryAsync<ToDoItem>>();
         var controller = new ToDoItemsController(null, repository);
 
-        var item = new ToDoItem { ToDoItemId = 7, Name = "test", Description = "desc", IsCompleted = false };
+        var item = new ToDoItem { ToDoItemId = 7, Name = "test", Description = "desc", IsCompleted = false, Category = "programming" };
         repository.ReadByIdAsync(7).Returns(Task.FromResult<ToDoItem?>(item));
         // Act
         var result = await controller.ReadById(7);
@@ -35,6 +35,7 @@ public class GetByIdTestsUnit
         Assert.Equal("test", dto.Name);
         Assert.Equal("desc", dto.Description);
         Assert.False(dto.IsCompleted);
+        Assert.Equal("programming", dto.Category);
 
         await repository.Received(1).ReadByIdAsync(7);
     }

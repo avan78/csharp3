@@ -27,7 +27,8 @@ public class GetTests
             ToDoItemId = 1,
             Name = "Alena",
             Description = "koš",
-            IsCompleted = false
+            IsCompleted = false,
+            Category = "domácí práce"
         };
 
         var toDoItem2 = new ToDoItem
@@ -35,7 +36,8 @@ public class GetTests
             ToDoItemId = 2,
             Name = "Petr",
             Description = "odpadky",
-            IsCompleted = true
+            IsCompleted = true,
+            Category = "domácí práce"
         };
 
         context.ToDoItems.AddRange(toDoItem1, toDoItem2);
@@ -64,6 +66,7 @@ public class GetTests
         Assert.Equal(toDoItem1.Name, firstToDo.Name);
         Assert.Equal(toDoItem1.Description, firstToDo.Description);
         Assert.Equal(toDoItem1.IsCompleted, firstToDo.IsCompleted);
+        Assert.Equal(toDoItem1.Category, firstToDo.Category);
 
 
         await context.Database.EnsureDeletedAsync();
@@ -73,9 +76,9 @@ public class GetTests
 
     //   [Fact] namísto fact můžu použít theory a vložit inline data
     [Theory]
-    [InlineData(10, "Jana", "okna", true)]
-    [InlineData(20, "Gabriel", "koupit květiny", false)]
-    public async Task Get_ItemById_ReturnsItemById(int id, string name, string description, bool isCompleted)
+    [InlineData(10, "Jana", "okna", true, "domácí práce")]
+    [InlineData(20, "Gabriel", "koupit květiny", false, "oslavy")]
+    public async Task Get_ItemById_ReturnsItemById(int id, string name, string description, bool isCompleted, string? category)
     {
         // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
@@ -87,7 +90,7 @@ public class GetTests
         var repository = new ToDoItemsRepository(context);
         var controller = new ToDoItemsController(context: context, repository: repository);
 
-        controller.AddItemToStorage(new ToDoItem { ToDoItemId = id, Name = name, Description = description, IsCompleted = isCompleted });
+        controller.AddItemToStorage(new ToDoItem { ToDoItemId = id, Name = name, Description = description, IsCompleted = isCompleted, Category = category });
         await context.SaveChangesAsync();
 
         // Act
@@ -103,6 +106,7 @@ public class GetTests
         Assert.Equal(isCompleted, item.IsCompleted);
         Assert.Equal(description, item.Description);
         Assert.IsType<bool>(item.IsCompleted);
+        Assert.Equal(category, item.Category);
 
         // Negative result
         var notFound = await controller.ReadById(777);

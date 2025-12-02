@@ -23,7 +23,8 @@ Content-Type: application/json
 {
   "name": "greeetings from holiday",
   "description": "send a postcard",
-  "isCompleted": true
+  "isCompleted": true,
+  "category": "writting"
 }
 
 ###
@@ -37,7 +38,8 @@ Content-Type: application/json
 {
   "name": "Updated Task",
   "description": "Updated postcard",
-  "isCompleted": false
+  "isCompleted": false,
+  "category": "rewriting"
 }
 
 ###

@@ -25,7 +25,7 @@ public class UpdateTests
         var repository = new ToDoItemsRepository(context);
         var controller = new ToDoItemsController(context: context, repository: repository);
 
-        var createTask = new ToDoItemCreateRequestDto("koš", "vynést odpadky", false);
+        var createTask = new ToDoItemCreateRequestDto("koš", "vynést odpadky", false, "domácí práce");
         var createResult = await controller.Create(createTask);
 
 
@@ -34,7 +34,7 @@ public class UpdateTests
         int id = createdTodo.ToDoItemId;
 
         // Act
-        var updateTask = new ToDoItemUpdateRequestDto("květiny", "udělat výzdobu", true);
+        var updateTask = new ToDoItemUpdateRequestDto("květiny", "udělat výzdobu", true, "oslavy");
         var updateResult = await controller.UpdateById(id, updateTask);
 
 

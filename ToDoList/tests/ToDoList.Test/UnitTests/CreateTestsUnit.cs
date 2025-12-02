@@ -20,7 +20,8 @@ public class CreateTestsUnit
         var todo = new ToDoItemCreateRequestDto(
             Name: "naplánovat dovolenou",
             Description: "Francie",
-            IsCompleted: true
+            IsCompleted: true,
+            Category: "cestování"
         );
 
 
@@ -45,11 +46,13 @@ public class CreateTestsUnit
         Assert.Equal("naplánovat dovolenou", value.Name);
         Assert.Equal("Francie", value.Description);
         Assert.True(value.IsCompleted);
+        Assert.Equal("cestování", value.Category);
 
         await repository.Received(1).CreateAsync(Arg.Is<ToDoItem>(t =>
               t.Name == todo.Name &&
               t.Description == todo.Description &&
-              t.IsCompleted == todo.IsCompleted
+              t.IsCompleted == todo.IsCompleted &&
+              t.Category == todo.Category
           ));
     }
 
@@ -63,7 +66,8 @@ public class CreateTestsUnit
         var todo = new ToDoItemCreateRequestDto(
             Name: "namalovat obraz",
             Description: "zátiší s kopretinami",
-            IsCompleted: true
+            IsCompleted: true,
+            Category: "umění"
         );
 
         repository.When(r => r.CreateAsync(Arg.Any<ToDoItem>()))

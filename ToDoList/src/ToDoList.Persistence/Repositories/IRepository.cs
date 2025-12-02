@@ -14,6 +14,7 @@ where T : class
     public T? UpdateById(T item); //void
 
     public bool DeleteById(int id); //void
+
 }
 
 public interface IRepositoryAsync<T>

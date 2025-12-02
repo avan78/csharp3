@@ -2,11 +2,11 @@ namespace ToDoList.Domain.DTOs;
 
 using ToDoList.Domain.Models;
 
-public record ToDoItemGetResponseDto(int ToDoItemId, string Name, string Description, bool IsCompleted)
+public record ToDoItemGetResponseDto(int ToDoItemId, string Name, string Description, bool IsCompleted, string? Category)
 {
     public static ToDoItemGetResponseDto From(ToDoItem t)
     {
-        return new(t.ToDoItemId, t.Name, t.Description, t.IsCompleted);
+        return new(t.ToDoItemId, t.Name, t.Description, t.IsCompleted, t.Category);
 
 
     }

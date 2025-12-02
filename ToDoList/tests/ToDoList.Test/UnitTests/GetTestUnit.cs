@@ -21,7 +21,7 @@ namespace ToDoList.Test.UnitTests
             // Arrange
             var repositoryMock = Substitute.For<IRepositoryAsync<ToDoItem>>();
             var controller = new ToDoItemsController(context: null, repositoryMock);
-            var someItem = new ToDoItem { Name = "testname", Description = "testDesc", IsCompleted = false };
+            var someItem = new ToDoItem { Name = "testname", Description = "testDesc", IsCompleted = false, Category = null };
             repositoryMock.ReadAsync().Returns([someItem]);
 
             // alternativa

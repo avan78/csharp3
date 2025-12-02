@@ -43,6 +43,7 @@ namespace ToDoList.Persistence.Repositories
             updatedTodo.Name = item.Name;
             updatedTodo.Description = item.Description;
             updatedTodo.IsCompleted = item.IsCompleted;
+            updatedTodo.Category = item.Category;
 
             await context.SaveChangesAsync();
             return updatedTodo;

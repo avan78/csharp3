@@ -12,9 +12,9 @@ using ToDoList.Persistence.Repositories;
 public class CreateTests
 {
     [Theory]
-    [InlineData("voňavý koutek", "koupit koření", false)]
-    [InlineData("univerzita", "udělat úkol", true)]
-    public async Task Create_Item_ReturnsToDoItem(string name, string description, bool isCompleted)
+    [InlineData("voňavý koutek", "koupit koření", false, "kuchyně")]
+    [InlineData("univerzita", "udělat úkol", true, "bakalář")]
+    public async Task Create_Item_ReturnsToDoItem(string name, string description, bool isCompleted, string? category)
     {
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         // Arrange
@@ -23,7 +23,7 @@ public class CreateTests
 
         var repository = new ToDoItemsRepository(context);
         var controller = new ToDoItemsController(context: context, repository: repository);
-        var request = new ToDoItemCreateRequestDto(name, description, isCompleted);
+        var request = new ToDoItemCreateRequestDto(name, description, isCompleted, category);
 
         // Act
         var result = await controller.Create(request);

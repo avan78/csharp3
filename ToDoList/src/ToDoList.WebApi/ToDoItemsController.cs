@@ -20,7 +20,7 @@ public class ToDoItemsController : ControllerBase
     {
         this.context = context;
         this.repository = repository;
-        var item = new ToDoItem { Name = "První úkol", Description = "První popis", IsCompleted = false };
+        var item = new ToDoItem { Name = "První úkol", Description = "První popis", IsCompleted = false, Category = "všeobecné" };
 
         // Asnotracking se používá jen u Read příkazů. Jestliže nic neměním,
         // je to pak úspornější na výpočet. Ale je to optional.
@@ -35,7 +35,7 @@ public class ToDoItemsController : ControllerBase
 
         try
         {
-            var todo = request.ToDomain(request.Name, request.Description, request.IsCompleted);
+            var todo = request.ToDomain(request.Name, request.Description, request.IsCompleted, request.Category);
 
             await repository.CreateAsync(todo);
 
@@ -118,7 +118,8 @@ public class ToDoItemsController : ControllerBase
                 ToDoItemId = toDoItemId,
                 Name = request.Name,
                 Description = request.Description,
-                IsCompleted = request.IsCompleted
+                IsCompleted = request.IsCompleted,
+                Category = request.Category
             };
 
             var modified = await repository.UpdateByIdAsync(updatedTodo);
