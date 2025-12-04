@@ -7,12 +7,13 @@ public class ToDoItem
 
     public ToDoItem() { }
 
-    public ToDoItem(int toDoItemId, string name, string description, bool isCompleted)
+    public ToDoItem(int toDoItemId, string name, string description, bool isCompleted, string? category)
     {
         ToDoItemId = toDoItemId;
         Name = name;
         Description = description;
         IsCompleted = isCompleted;
+        Category = category;
     }
 
     [Key]
@@ -23,6 +24,8 @@ public class ToDoItem
     public string Description { get; set; }
 
     public bool IsCompleted { get; set; }
+
+    public string? Category { get; set; }
 
 
 }

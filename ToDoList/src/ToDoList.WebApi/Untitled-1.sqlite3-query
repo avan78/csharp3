@@ -1,0 +1,5 @@
+-- database: c:\CSharp\csharp3\ToDoList\src\ToDoList.WebApi\localdb.db
+
+-- Use the ▷ button in the top right corner to run the entire file.
+
+SELECT * FROM __EFMigrationsHistory;
