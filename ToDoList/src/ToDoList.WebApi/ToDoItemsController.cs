@@ -7,7 +7,6 @@ using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using ToDoList.Persistence;
 using ToDoList.Persistence.Repositories;
-using static ToDoList.Persistence.Repositories.IRepositoryAsync;
 
 [Route("api/[controller]")] // localhost:5000/api/ToDoItems
 [ApiController]
