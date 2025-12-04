@@ -7,6 +7,7 @@ using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using ToDoList.Persistence;
 using ToDoList.Persistence.Repositories;
+using static ToDoList.Persistence.Repositories.IRepositoryAsync;
 
 [Route("api/[controller]")] // localhost:5000/api/ToDoItems
 [ApiController]
@@ -25,9 +26,6 @@ public class ToDoItemsController : ControllerBase
         // Asnotracking se používá jen u Read příkazů. Jestliže nic neměním,
         // je to pak úspornější na výpočet. Ale je to optional.
     }
-
-    private static int todoId = 5;
-
 
     [HttpPost]
     public async Task<ActionResult<ToDoItemGetResponseDto>> Create([FromBody] ToDoItemCreateRequestDto request) // použijeme DTO - Data transfer object //actionresult

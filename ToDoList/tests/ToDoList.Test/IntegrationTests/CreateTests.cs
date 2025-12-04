@@ -34,7 +34,12 @@ public class CreateTests
         Assert.Equal(request.Name, newTodoValue.Name);
 
         // cleanup
-        context.ToDoItems.Remove(context.ToDoItems.Find(newTodoValue.ToDoItemId));
+        var killToDo = context.ToDoItems.Find(newTodoValue.ToDoItemId);
+
+        if (killToDo != null)
+        {
+            context.ToDoItems.Remove(killToDo);
+        }
         await context.SaveChangesAsync();
 
 

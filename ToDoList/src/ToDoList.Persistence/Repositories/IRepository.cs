@@ -7,7 +7,7 @@ where T : class
 {
     public void Create(T item);
 
-    public List<ToDoItem> Read(); //IEnumerable<T>
+    public List<T> Read(); //IEnumerable<T>
 
     public T? ReadById(int id);
 
@@ -17,16 +17,3 @@ where T : class
 
 }
 
-public interface IRepositoryAsync<T>
-where T : class
-{
-    public Task CreateAsync(T item);
-
-    public Task<List<ToDoItem>> ReadAsync(); //IEnumerable<T>
-
-    public Task<T?> ReadByIdAsync(int id);
-
-    public Task<T?> UpdateByIdAsync(T item); //void
-
-    public Task<bool> DeleteByIdAsync(int id); //void
-}
