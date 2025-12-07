@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Pages\Models\" />
+    <ProjectReference Include="..\ToDoList.Domain\ToDoList.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ToDoList.Domain\ToDoList.Domain.csproj" />
+    <Folder Include="Components\Pages\Models\" />
   </ItemGroup>
 
 </Project>

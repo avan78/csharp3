@@ -1,0 +1,58 @@
+﻿@page "/editToDoItem/{ItemId:int}"
+@using ToDoList.Frontend.Clients
+@using ToDoList.Frontend.Models
+
+@inject IToDoItemsClient toDoItemsClient
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+@if (ToDoModel is not null)
+{
+    <EditForm Model="@ToDoModel" FormName="EditTodoItem" OnSubmit="@Submit">
+        <div>
+            <label for="Name" class="form-label">Name</label>
+            <InputText id="Name" @bind-Value="ToDoModel.Name" class="form-input" />
+        </div>
+        <div>
+            <label for="Description" class="form-label">Name</label>
+            <InputText id="Description" @bind-Value="ToDoModel.Description" class="form-control" />
+        </div>
+        <div>
+            <label for="Category" class="form-label">Category</label>
+            <InputText id="Category" @bind-Value="ToDoModel.Category" class="form-control" />
+        </div>
+        <InputCheckbox id="IsCompleted" @bind-Value="ToDoModel.IsCompleted" />
+
+        <button type="submit">Submit</button>
+    </EditForm>
+
+    @ToDoModel.Name
+    @ToDoModel.Description
+    @ToDoModel.IsCompleted
+    @ToDoModel.Category
+}
+
+
+<b>@ItemId</b>
+
+@code {
+    //id = jméno prvku, který chci měnit
+    //bind value = jaká proměnná má být napojena na editovaný prvek
+
+    protected override async Task OnInitializedAsync()
+    {
+        ToDoModel = await toDoItemsClient.ReadItemByIdAsync(ItemId);
+    }
+    [Parameter]
+    public int ItemId { get; set; }
+
+    [SupplyParameterFromForm]
+    public ToDoItemView ToDoModel { get; set; }
+
+    public async Task Submit()
+    {
+        await toDoItemsClient.UpdateItemAsync(ToDoModel);
+        NavigationManager.NavigateTo("/");
+    }
+}
