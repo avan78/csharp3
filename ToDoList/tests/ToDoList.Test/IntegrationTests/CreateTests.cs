@@ -12,21 +12,21 @@ using ToDoList.Persistence.Repositories;
 public class CreateTests
 {
     [Theory]
-    [InlineData("voňavý koutek", "koupit koření", false)]
-    [InlineData("univerzita", "udělat úkol", true)]
-    public void Create_Item_ReturnsToDoItem(string name, string description, bool isCompleted)
+    [InlineData("voňavý koutek", "koupit koření", false, "kuchyně")]
+    [InlineData("univerzita", "udělat úkol", true, "bakalář")]
+    public async Task Create_Item_ReturnsToDoItem(string name, string description, bool isCompleted, string? category)
     {
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         // Arrange
         using var context = new ToDoItemsContext(connectionString);
-        context.Database.Migrate();
+        await context.Database.MigrateAsync();
 
         var repository = new ToDoItemsRepository(context);
         var controller = new ToDoItemsController(context: context, repository: repository);
-        var request = new ToDoItemCreateRequestDto(name, description, isCompleted);
+        var request = new ToDoItemCreateRequestDto(name, description, isCompleted, category);
 
         // Act
-        var result = controller.Create(request);
+        var result = await controller.Create(request);
 
         // Assert
         var newTodoResult = Assert.IsType<CreatedAtActionResult>(result.Result);
@@ -34,8 +34,13 @@ public class CreateTests
         Assert.Equal(request.Name, newTodoValue.Name);
 
         // cleanup
-        context.ToDoItems.Remove(context.ToDoItems.Find(newTodoValue.ToDoItemId));
-        context.SaveChanges();
+        var killToDo = context.ToDoItems.Find(newTodoValue.ToDoItemId);
+
+        if (killToDo != null)
+        {
+            context.ToDoItems.Remove(killToDo);
+        }
+        await context.SaveChangesAsync();
 
 
 

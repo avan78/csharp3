@@ -15,13 +15,13 @@ public class DeleteTests
 {
     [Theory]
     [InlineData(1)]
-    public void Delete_ItemById(int id)
+    public async Task Delete_ItemById(int id)
     {
         // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         using var context = new ToDoItemsContext(connectionString);
-        context.Database.EnsureDeleted();
-        context.Database.Migrate();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.MigrateAsync();
         var repository = new ToDoItemsRepository(context);
 
         var controller = new ToDoItemsController(context: context, repository: repository);
@@ -36,43 +36,40 @@ public class DeleteTests
 
         controller.AddItemToStorage(task);
         // Act
-        var result = controller.DeleteById(id);
-        var exist = controller.ReadById(id);
+        var result = await controller.DeleteById(id);
+        var exist = await controller.ReadById(id);
 
         // Assert
         // var noContent = Assert.IsType<ObjectResult>(result);
         Assert.IsType<NotFoundResult>(exist.Result);
         // Assert.IsType<NoContentResult>(result);
 
-
-        context.Database.EnsureDeleted();
+        //cleanup
+        await context.Database.EnsureDeletedAsync();
 
 
 
     }
     [Fact]
-    public void Delete_ById_Return404()
+    public async Task Delete_ById_Return404()
     {
         // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         var context = new ToDoItemsContext(connectionString);
-        context.Database.EnsureDeleted();
-        context.Database.Migrate();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.MigrateAsync();
         var repository = new ToDoItemsRepository(context);
 
-        try
-        {
-            var controller = new ToDoItemsController(context: context, repository: repository);
-            // Act
-            var result = controller.DeleteById(200);
-            // Assert
-            var notFound = Assert.IsType<NotFoundResult>(result);
-            Assert.Equal(404, notFound.StatusCode);
-        }
-        finally
-        {
-            context.Database.EnsureDeleted();
-        }
+
+        var controller = new ToDoItemsController(context: context, repository: repository);
+        // Act
+        var result = await controller.DeleteById(200);
+        // Assert
+        var notFound = Assert.IsType<NotFoundResult>(result);
+        Assert.Equal(404, notFound.StatusCode);
+
+        await context.Database.EnsureDeletedAsync();
+
     }
 
 }

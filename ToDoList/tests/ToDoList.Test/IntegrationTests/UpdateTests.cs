@@ -14,19 +14,19 @@ public class UpdateTests
 {
 
     [Fact]
-    public void Update_Item()
+    public async Task Update_Item()
     {
         // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         var context = new ToDoItemsContext(connectionString);
-        context.Database.EnsureDeleted();
-        context.Database.Migrate();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.MigrateAsync();
 
         var repository = new ToDoItemsRepository(context);
         var controller = new ToDoItemsController(context: context, repository: repository);
 
-        var createTask = new ToDoItemCreateRequestDto("koš", "vynést odpadky", false);
-        var createResult = controller.Create(createTask);
+        var createTask = new ToDoItemCreateRequestDto("koš", "vynést odpadky", false, "domácí práce");
+        var createResult = await controller.Create(createTask);
 
 
         var newTaskType = Assert.IsType<CreatedAtActionResult>(createResult.Result);
@@ -34,8 +34,8 @@ public class UpdateTests
         int id = createdTodo.ToDoItemId;
 
         // Act
-        var updateTask = new ToDoItemUpdateRequestDto("květiny", "udělat výzdobu", true);
-        var updateResult = controller.UpdateById(id, updateTask);
+        var updateTask = new ToDoItemUpdateRequestDto("květiny", "udělat výzdobu", true, "oslavy");
+        var updateResult = await controller.UpdateById(id, updateTask);
 
 
         // Assert
@@ -48,7 +48,7 @@ public class UpdateTests
 
         Assert.NotEqual("koš", correctUpdated.Name);
 
-        context.Database.EnsureDeleted();
+        await context.Database.EnsureDeletedAsync();
 
 
 

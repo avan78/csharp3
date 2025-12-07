@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddSwaggerGen();
     builder.Services.AddDbContext<ToDoItemsContext>();
     // addscoped používáme proto, abychom dostali vždy stejný scope
-    builder.Services.AddScoped<IRepository<ToDoItem>, ToDoItemsRepository>();
+    builder.Services.AddScoped<IRepositoryAsync<ToDoItem>, ToDoItemsRepository>();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 

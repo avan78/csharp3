@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ToDoList.Persistence.Repositories
 {
-    public class ToDoItemsRepository : IRepository<ToDoItem>
+    public class ToDoItemsRepository : IRepositoryAsync<ToDoItem>
     {
         private readonly ToDoItemsContext context;
         public ToDoItemsRepository(ToDoItemsContext context)
@@ -16,49 +16,50 @@ namespace ToDoList.Persistence.Repositories
         {
             this.context = context;
         }
-        public void Create(ToDoItem item)
+        public async Task CreateAsync(ToDoItem item)
         {
-            context.ToDoItems.Add(item);
-            context.SaveChanges();
+            await context.ToDoItems.AddAsync(item);
+            await context.SaveChangesAsync();
         }
 
-        public List<ToDoItem> Read()
-
+        public async Task<List<ToDoItem>> ReadAsync()
+          //??
           => [.. context.ToDoItems.AsNoTracking()];
 
 
-        public ToDoItem? ReadById(int id)
+        public async Task<ToDoItem?> ReadByIdAsync(int id)
 
-          => context.ToDoItems.AsNoTracking().FirstOrDefault(t => t.ToDoItemId == id);
+          => await context.ToDoItems.AsNoTracking().FirstOrDefaultAsync(t => t.ToDoItemId == id);
 
 
-        public ToDoItem? UpdateById(ToDoItem item)
+        public async Task<ToDoItem?> UpdateByIdAsync(ToDoItem item)
         {
-            var updatedTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == item.ToDoItemId);
+            var updatedTodo = await context.ToDoItems.FirstOrDefaultAsync(t => t.ToDoItemId == item.ToDoItemId);
             if (updatedTodo is null)
             {
                 return null;
             }
-// alternativa: použití find a pak context.Entry(foundItem).CurrentValues.SetValues(item)
+            // alternativa: použití find a pak context.Entry(foundItem).CurrentValues.SetValues(item)
             updatedTodo.Name = item.Name;
             updatedTodo.Description = item.Description;
             updatedTodo.IsCompleted = item.IsCompleted;
+            updatedTodo.Category = item.Category;
 
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return updatedTodo;
 
         }
 
-        public bool DeleteById(int id)
+        public async Task<bool> DeleteByIdAsync(int id)
         {
-            var deadTodo = context.ToDoItems.FirstOrDefault(t => t.ToDoItemId == id);
+            var deadTodo = await context.ToDoItems.FirstOrDefaultAsync(t => t.ToDoItemId == id);
             if (deadTodo is null)
             {
                 return false;
             }
 
             context.ToDoItems.Remove(deadTodo);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return true;
         }
     }

@@ -13,12 +13,12 @@ public class GetTests
 {
 
     [Fact]
-    public void Get_AllItems_ReturnsAllItems()
+    public async Task Get_AllItems_ReturnsAllItems()
     {
         // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         using var context = new ToDoItemsContext(connectionString);
-        context.Database.Migrate();
+        await context.Database.MigrateAsync();
 
 
         var toDoItem1 = new ToDoItem
@@ -27,7 +27,8 @@ public class GetTests
             ToDoItemId = 1,
             Name = "Alena",
             Description = "koš",
-            IsCompleted = false
+            IsCompleted = false,
+            Category = "domácí práce"
         };
 
         var toDoItem2 = new ToDoItem
@@ -35,11 +36,12 @@ public class GetTests
             ToDoItemId = 2,
             Name = "Petr",
             Description = "odpadky",
-            IsCompleted = true
+            IsCompleted = true,
+            Category = "domácí práce"
         };
 
         context.ToDoItems.AddRange(toDoItem1, toDoItem2);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
         // controller.AddItemToStorage(toDoItem1);
         //controller.AddItemToStorage(toDoItem2);
@@ -49,7 +51,7 @@ public class GetTests
 
 
         // Act
-        var result = controller.Read();
+        var result = await controller.Read();
         IEnumerable<ToDoItemGetResponseDto> value = result.Result is OkObjectResult ok ? Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(ok.Value) : Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(result.Value);
         // var value = result.GetValue(); //přidat v extension
 
@@ -64,34 +66,35 @@ public class GetTests
         Assert.Equal(toDoItem1.Name, firstToDo.Name);
         Assert.Equal(toDoItem1.Description, firstToDo.Description);
         Assert.Equal(toDoItem1.IsCompleted, firstToDo.IsCompleted);
+        Assert.Equal(toDoItem1.Category, firstToDo.Category);
 
 
-        context.Database.EnsureDeleted();
+        await context.Database.EnsureDeletedAsync();
 
 
     }
 
     //   [Fact] namísto fact můžu použít theory a vložit inline data
     [Theory]
-    [InlineData(10, "Jana", "okna", true)]
-    [InlineData(20, "Gabriel", "koupit květiny", false)]
-    public void Get_ItemById_ReturnsItemById(int id, string name, string description, bool isCompleted)
+    [InlineData(10, "Jana", "okna", true, "domácí práce")]
+    [InlineData(20, "Gabriel", "koupit květiny", false, "oslavy")]
+    public async Task Get_ItemById_ReturnsItemById(int id, string name, string description, bool isCompleted, string? category)
     {
         // Arrange
         string connectionString = "Data Source=../../../IntegrationTests/data/localDbTestDb.db";
         var context = new ToDoItemsContext(connectionString);
-        context.Database.EnsureDeleted();
-        context.Database.Migrate();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.MigrateAsync();
 
 
         var repository = new ToDoItemsRepository(context);
         var controller = new ToDoItemsController(context: context, repository: repository);
 
-        controller.AddItemToStorage(new ToDoItem { ToDoItemId = id, Name = name, Description = description, IsCompleted = isCompleted });
-        context.SaveChanges();
+        controller.AddItemToStorage(new ToDoItem { ToDoItemId = id, Name = name, Description = description, IsCompleted = isCompleted, Category = category });
+        await context.SaveChangesAsync();
 
         // Act
-        ActionResult<ToDoItemGetResponseDto> result = controller.ReadById(id);
+        ActionResult<ToDoItemGetResponseDto> result = await controller.ReadById(id);
 
         // Assert
         // var action = Assert.IsType<ActionResult<ToDoItemGetResponseDto>>(result);
@@ -103,14 +106,13 @@ public class GetTests
         Assert.Equal(isCompleted, item.IsCompleted);
         Assert.Equal(description, item.Description);
         Assert.IsType<bool>(item.IsCompleted);
+        Assert.Equal(category, item.Category);
 
         // Negative result
-        var notFound = controller.ReadById(777);
+        var notFound = await controller.ReadById(777);
         Assert.IsType<NotFoundResult>(notFound.Result);
 
-        context.Database.EnsureDeleted();
+        await context.Database.EnsureDeletedAsync();
 
     }
-
-
 }

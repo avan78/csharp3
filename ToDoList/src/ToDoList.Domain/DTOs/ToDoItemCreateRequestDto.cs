@@ -2,15 +2,16 @@ namespace ToDoList.Domain.DTOs;
 
 using ToDoList.Domain.Models;
 
-public record ToDoItemCreateRequestDto(string Name, string Description, bool IsCompleted)
+public record ToDoItemCreateRequestDto(string Name, string Description, bool IsCompleted, string? Category)
 {
-    public ToDoItem ToDomain(string name, string description, bool isCompleted)
+    public ToDoItem ToDomain(string name, string description, bool isCompleted, string? category)
     {
         return new ToDoItem
         {
             Name = name,
             Description = description,
-            IsCompleted = isCompleted
+            IsCompleted = isCompleted,
+            Category = category
         };
     }
 }
