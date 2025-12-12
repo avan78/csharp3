@@ -21,13 +21,18 @@ public class ToDoItemsClient : IToDoItemsClient
             IsCompleted = dto.IsCompleted,
             Category = dto.Category
         }).ToList();
-        return toDoItemViews ?? new List<ToDoItemView>();
+        return toDoItemViews ?? [];
     }
 
-    public async Task<ToDoItemView?> ReadItemByIdAsync(int todoId)
+    public async Task<ToDoItemView?> ReadItemByIdAsync(int itemId)
     {
-        var response = await httpClient.GetFromJsonAsync<ToDoItemGetResponseDto>($"api/ToDoItems/{todoId}");
 
+        var response = await httpClient.GetFromJsonAsync<ToDoItemGetResponseDto>($"api/ToDoItems/{itemId}");
+
+        if (response == null)
+        {
+            return null;
+        }
         var toDoItem = new ToDoItemView()
         {
             Id = response.ToDoItemId,

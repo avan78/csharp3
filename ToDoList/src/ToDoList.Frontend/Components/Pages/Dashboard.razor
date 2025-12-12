@@ -22,7 +22,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in sortedData)
+            @foreach (var item in sortedData.Where(CurrentFilter))
             {
                 <tr class="table-light">
                     <td>@item.Id</td>
@@ -47,6 +47,10 @@
     </table>
 </div>
 
+<button class="btn btn-info" @onclick="ShowAll">Show All</button>
+<button class="btn btn-info" @onclick="ShowCompleted">Show Completed</button>
+<button class="btn btn-info" @onclick="ShowNotCompleted">Show Incomplete</button>
+
 @code
 {
     //void OnInitialized() funkce, která zavolá data na první render
@@ -57,7 +61,7 @@
     private bool sortByDescriptionAsc = true;
     private bool sortByIsCompletedAsc = true;
     private bool sortByCategoryAsc = true;
-
+    private Func<ToDoItemView, bool> CurrentFilter = (ToDoItemView itemView) => true;
     private List<ToDoItemView> testData = new List<ToDoItemView>
 {
 new ToDoItemView{
@@ -140,6 +144,18 @@ Category = "výlet"
         sortByCategoryAsc = !sortByCategoryAsc;
         sortedData = sortByCategoryAsc ?
         sortedData.OrderBy(todo => todo.Category).ToList() : sortedData.OrderByDescending(todo => todo.Category).ToList();
+    }
+    public void ShowAll()
+    {
+        CurrentFilter = (ToDoItemView itemView) => true;
+    }
+    public void ShowCompleted()
+    {
+        CurrentFilter = (ToDoItemView itemView) => itemView.IsCompleted;
+    }
+    public void ShowNotCompleted()
+    {
+        CurrentFilter = (ToDoItemView itemView) => !itemView.IsCompleted; // lambda nahrazuje if podmínku
     }
     public void EditItem(ToDoItemView todo)
     {

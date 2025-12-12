@@ -9,14 +9,18 @@
 
 @if (ToDoModel is not null)
 {
-    <EditForm Model="@ToDoModel" FormName="EditTodoItem" OnSubmit="@Submit">
+    <EditForm Model="@ToDoModel" FormName="EditTodoItem" OnValidSubmit="@Submit">
+        <DataAnnotationsValidator />
         <div>
             <label for="Name" class="form-label">Name</label>
             <InputText id="Name" @bind-Value="ToDoModel.Name" class="form-input" />
+            <ValidationMessage For="() => ToDoModel.Name" />
         </div>
         <div>
             <label for="Description" class="form-label">Name</label>
             <InputText id="Description" @bind-Value="ToDoModel.Description" class="form-control" />
+            <ValidationMessage For="() => ToDoModel.Description" />
+
         </div>
         <div>
             <label for="Category" class="form-label">Category</label>
@@ -43,16 +47,34 @@
     protected override async Task OnInitializedAsync()
     {
         ToDoModel = await toDoItemsClient.ReadItemByIdAsync(ItemId);
+        submitDelegate = LogSubmit;
+        //submitDelegate += LogSubmit;
+        // submitDelegate -= LogSubmit;
+
     }
     [Parameter]
     public int ItemId { get; set; }
 
     [SupplyParameterFromForm]
     public ToDoItemView ToDoModel { get; set; }
+    public delegate void ToDoItemViewProcessingDelegate(ToDoItemView toDo);
+    private ToDoItemViewProcessingDelegate submitDelegate;
 
     public async Task Submit()
     {
         await toDoItemsClient.UpdateItemAsync(ToDoModel);
+        if (ToDoModel != null)
+        {
+            // pozor, výpis najdeme v záložce debug!
+            submitDelegate.Invoke(ToDoModel);
+            // může být také zapsáno jako submitDelegate?.Invoke(ToDoModel);
+            // tj. bez podmínky
+
+        }
         NavigationManager.NavigateTo("/");
+    }
+    public void LogSubmit(ToDoItemView toDo)
+    {
+        Console.WriteLine("Task nr. " + toDo.Id + " was edited.");
     }
 }
