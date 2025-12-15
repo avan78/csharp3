@@ -26,4 +26,82 @@ Welcome to your new app.
     {
         return Guid.NewGuid().ToString();
     }
+
+    //deklarace delegáta
+    public delegate int NumberOperationDelegate(int number1, int number2);
+    public delegate void StringTakingDelegate(string message);
+    public int Multiply(int a, int b)
+    {
+        Console.WriteLine("Multiply called.");
+        return a * b;
+    }
+    public int Divide(int a, int b)
+    {
+        Console.WriteLine("Divide called.");
+        return a / b;
+    }
+    public int DivideBy2(int a)
+    {
+        return a / 2;
+    }
+    public void LogToConsole(string msg)
+    {
+        Console.WriteLine(msg);
+    }
+    public bool DoesContainChar(string retez)
+    {
+        return retez.Contains("c");
+    }
+    protected override void OnInitialized()
+    {
+        // delegát - důl - předáváme funkci pomocí parametru a můžeme s ním pracovat!
+        // Můžeme použít přichystané default delegáty, nebo vymyslet svoje
+        // dále tady máme Actions, func a lambdy
+        // definice delegáta:
+        NumberOperationDelegate myDelegate;
+        // přiřadím mu hodnotu - a ta hodnota je odkaz na metodu Multiply, Divide - funkci, která
+        // odpovídá předpisu - ne DivideBy2
+        // Je možné opakovat to připsání --> vykoná Multiply (2x za sebou) a Divide, dodá výsledek
+        // toho posledního, co spočítal
+        myDelegate = Multiply;
+        myDelegate += Multiply;
+        myDelegate += Divide;
+
+        // Deklarace
+        StringTakingDelegate myStringDelegate;
+        myStringDelegate = LogToConsole;
+        myStringDelegate += LogToConsole;
+        myStringDelegate += LogToConsole;
+
+        // volám delegáta - ten se podívá, jakou tam má metodu, skočí do Multiply a vrátí výsledek
+        var result = myDelegate(2, 3);
+        Console.WriteLine(result);
+
+        // invoke můžu použít s otazníkem, tj. bude-li něco null, nespadne to
+        myStringDelegate?.Invoke("LogToConsole");
+
+        List<string> strings = ["a", "b", "c", "d", "e"];
+        // Jak v listu najít něco, co obsahuje c
+        // strings.Find
+        strings.Where(s => s.Contains("c"));
+        // můžu to namísto lambda výrazu zapsat i touto funkcí výše
+        strings.Where(DoesContainChar);
+        //v .netu jsou již předepsané delegáty
+        Action functionReturningVoid;
+        //functionReturningVoid =
+        Action<string> functionTakingStringAndReturningVoid;
+        functionTakingStringAndReturningVoid = LogToConsole;
+        functionTakingStringAndReturningVoid?.Invoke("Zprava z Action!");
+        Func<bool> functionReturningBool;
+        //přichystané delegáty, můžeme z nich vybrat až 16 výstupů
+        Func<int, int, int> functionReturningIntAndTakingTwoInts;
+        functionReturningIntAndTakingTwoInts = Multiply;
+    }
+
+    //příklad - mimo
+    public struct MyStruct
+    {
+        string name;
+        string surname;
+    }
 }

@@ -13,12 +13,48 @@ public class ToDoItemsClient : IToDoItemsClient
     {
         var toDoItemViews = new List<ToDoItemView>();
         var response = await httpClient.GetFromJsonAsync<List<ToDoItemGetResponseDto>>("api/ToDoItems");
-        toDoItemViews = response.Select(dto => new ToDoItemView(
-            dto.ToDoItemId,
-            dto.Name,
-            dto.Description,
-            dto.IsCompleted
-            )).ToList();
-        return toDoItemViews;
+        toDoItemViews = response?.Select(dto => new ToDoItemView
+        {
+            Id = dto.ToDoItemId,
+            Name = dto.Name,
+            Description = dto.Description,
+            IsCompleted = dto.IsCompleted,
+            Category = dto.Category
+        }).ToList();
+        return toDoItemViews ?? [];
+    }
+
+    public async Task<ToDoItemView?> ReadItemByIdAsync(int itemId)
+    {
+
+        var response = await httpClient.GetFromJsonAsync<ToDoItemGetResponseDto>($"api/ToDoItems/{itemId}");
+
+        if (response == null)
+        {
+            return null;
+        }
+        var toDoItem = new ToDoItemView()
+        {
+            Id = response.ToDoItemId,
+            Name = response.Name,
+            Description = response.Description,
+            IsCompleted = response.IsCompleted,
+            Category = response.Category
+        };
+
+        return toDoItem;
+    }
+
+    public async Task UpdateItemAsync(ToDoItemView item)
+    {
+        var itemRequest = new ToDoItemUpdateRequestDto(item.Name, item.Description, item.IsCompleted, item.Category);
+        var response = await httpClient.PutAsJsonAsync($"api/ToDoItems/{item.Id}", itemRequest);
+
+    }
+
+    public async Task RemoveItemAsync(int itemId)
+    {
+        var response = await httpClient.DeleteAsync($"api/ToDoItems/{itemId}");
+        response.EnsureSuccessStatusCode();
     }
 }

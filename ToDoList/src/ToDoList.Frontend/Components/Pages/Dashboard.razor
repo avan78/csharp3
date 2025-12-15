@@ -4,32 +4,52 @@
 @using ToDoList.Frontend.Models
 @using System.Linq;
 @inject IToDoItemsClient toDoItemsClient
+@inject NavigationManager NavigationManager
+
 
 <div>
     <h2>Christmas dashboard 🎄🎁</h2>
-    <table>
-        <thead>
+    <table class="table table-hover mt-3">
+        <thead class="table-dark">
             <tr>
-                <th><button class="sort-button" @onclick="OrderById">Id ↑↓</button></th>
+                <th><button class="btn btn-primary" @onclick="OrderById">Id ↑↓</button></th>
                 <th><button class="sort-button" @onclick="OrderByName">Name ↑↓</button></th>
                 <th><button class="sort-button" @onclick="OrderByDescription">Descripiton ↑↓</button></th>
                 <th><button class="sort-button" @onclick="OrderByIsCompleted">Completed ↑↓</button></th>
+                <th><button class="sort-button" @onclick="OrderByCategory">Category ↑↓</button></th>
+                <th>Actions</th>
+
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in sortedData)
+            @foreach (var item in sortedData.Where(CurrentFilter))
             {
-                <tr>
+                <tr class="table-light">
                     <td>@item.Id</td>
                     <td>@item.Name</td>
                     <td>@item.Description</td>
-                    <td>@(item.IsCompleted ? "Dokončen" : "Nedokončen")</td>
+                    <td class="@Completation(item)">@(item.IsCompleted ? "Dokončen" : "Nedokončen")</td>
+                    <td>@item.Category</td>
+
+                    <td>
+                        <button class="btn btn-info" @onclick="async () => await ChangeIsCompleted(item)"> <i
+                                class="bi bi-check-square-fill"></i>
+                        </button>
+                        <button class="btn btn-success" @onclick="() => EditItem(item)"><i
+                                class="bi bi-feather"></i></button>
+                        <button class="btn btn-danger" @onclick="async () => await RemoveItem(item)"><i
+                                class="bi bi-trash3"></i></button>
+                    </td>
 
                 </tr>
             }
         </tbody>
     </table>
 </div>
+
+<button class="btn btn-info" @onclick="ShowAll">Show All</button>
+<button class="btn btn-info" @onclick="ShowCompleted">Show Completed</button>
+<button class="btn btn-info" @onclick="ShowNotCompleted">Show Incomplete</button>
 
 @code
 {
@@ -40,39 +60,46 @@
     private bool sortByNameAsc = true;
     private bool sortByDescriptionAsc = true;
     private bool sortByIsCompletedAsc = true;
-
+    private bool sortByCategoryAsc = true;
+    private Func<ToDoItemView, bool> CurrentFilter = (ToDoItemView itemView) => true;
     private List<ToDoItemView> testData = new List<ToDoItemView>
 {
-new ToDoItemView(
-Id: 1,
-Name: "věnec",
-Description: "vyrobit adventní věnec a umístit jej na stůl",
-IsCompleted: false
-),
-new ToDoItemView(
-Id: 2,
-Name: "dárečky",
-Description: "nakoupit",
-IsCompleted: true
-),
-new ToDoItemView(
-Id: 3,
-Name: "svíčky",
-Description: "rozmístit v bytě vánoční svíčky",
-IsCompleted: false
-),
-new ToDoItemView(
-Id: 4,
-Name: "vánoční trhy",
-Description: "navštívit vánoční trhy",
-IsCompleted: false
-),
-new ToDoItemView(
-Id: 5,
-Name: "hrady a zámky",
-Description: "navštívit adventní prohlídku nějakého zámku - Žleby, Třeboň, Kuks...",
-IsCompleted: true
-),
+new ToDoItemView{
+Id = 1,
+Name = "věnec",
+Description = "vyrobit adventní věnec a umístit jej na stůl",
+IsCompleted = false,
+Category = "Vánoce"
+},
+new ToDoItemView
+{
+Id = 2,
+Name = "dárečky",
+Description = "nakoupit",
+IsCompleted = true,
+Category = "Vánoce"
+},
+new ToDoItemView{
+Id = 3,
+Name = "svíčky",
+Description = "rozmístit v bytě vánoční svíčky",
+IsCompleted = false,
+Category = "advent"
+},
+new ToDoItemView{
+Id = 4,
+Name = "vánoční trhy",
+Description = "navštívit vánoční trhy",
+IsCompleted = false,
+Category = "výzdoba"
+},
+new ToDoItemView{
+Id = 5,
+Name = "hrady a zámky",
+Description = "navštívit adventní prohlídku nějakého zámku - Žleby, Třeboň, Kuks...",
+IsCompleted = true,
+Category = "výlet"
+},
 };
 
     //IEnumerable<ToDoItemView> sortedTodos = test
@@ -112,4 +139,47 @@ IsCompleted: true
         sortedData = sortByIsCompletedAsc ?
         sortedData.OrderBy(todo => todo.IsCompleted).ToList() : sortedData.OrderByDescending(todo => todo.IsCompleted).ToList();
     }
+    private void OrderByCategory()
+    {
+        sortByCategoryAsc = !sortByCategoryAsc;
+        sortedData = sortByCategoryAsc ?
+        sortedData.OrderBy(todo => todo.Category).ToList() : sortedData.OrderByDescending(todo => todo.Category).ToList();
+    }
+    public void ShowAll()
+    {
+        CurrentFilter = (ToDoItemView itemView) => true;
+    }
+    public void ShowCompleted()
+    {
+        CurrentFilter = (ToDoItemView itemView) => itemView.IsCompleted;
+    }
+    public void ShowNotCompleted()
+    {
+        CurrentFilter = (ToDoItemView itemView) => !itemView.IsCompleted; // lambda nahrazuje if podmínku
+    }
+    public void EditItem(ToDoItemView todo)
+    {
+        NavigationManager.NavigateTo($"editToDoItem/{todo.Id}");
+    }
+    public async Task RemoveItem(ToDoItemView todo)
+    {
+        await toDoItemsClient.RemoveItemAsync(todo.Id);
+        sortedData = sortedData.Where(item => item.Id != todo.Id).ToList();
+    }
+
+    public async Task ChangeIsCompleted(ToDoItemView todo)
+    {
+        todo.IsCompleted = !todo.IsCompleted;
+        await toDoItemsClient.UpdateItemAsync(todo);
+    }
+
+    private string Completation(ToDoItemView todo)
+    {
+        if (todo.IsCompleted == true)
+        {
+            return "table-success";
+        }
+        return "table-danger";
+    }
+
 }
